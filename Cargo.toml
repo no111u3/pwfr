@@ -1,0 +1,16 @@
+[package]
+name = "pwrf"
+version = "0.0.0-none"
+edition = "2018"
+authors = ["Boris Vinogradov <no111u3@gmail.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/no111u3/pwfr"
+readme = "README.md"
+description = "Portage with Fixed Resolver"
+
+[lib]
+name = "pwfr"
+path = "src/pwfr/lib.rs"
+
+[dependencies]
+clap = "2.33.0"
