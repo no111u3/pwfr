@@ -2,6 +2,8 @@
 //!
 //! Main functionality of for ebuild entity
 
+pub mod efile;
+
 // Ebuild entity
 #[derive(Debug, PartialEq)]
 pub struct Ebuild {}
