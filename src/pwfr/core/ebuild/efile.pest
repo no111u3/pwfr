@@ -1,1 +1,55 @@
-WHITESPACE = _{ " " | "\t" }
+WHITESPACE = _{
+    " " | "\t" | "\r"
+    // A trailing backslash at the and of a line.
+    | "\\\n"
+}
+
+COMMENT = _{ "#" ~ (!("\n") ~ ANY)* }
+
+newline = { "\n" }
+
+// WhiteSpaces, comments and Newlines
+wsnl = _ { (WHITESPACE | COMMENT | newline)+ }
+
+var_name_chars = _{
+    ASCII_ALPHANUMERIC
+}
+
+var_name = ${ var_name_chars+ }
+
+assign_op = { "=" }
+
+// Word
+word = ${ span ~ span* }
+span = _{
+    double_quoted_span
+}
+
+double_quoted_span = { "\"" ~ double_quoted_span_inner* ~ "\"" }
+double_quoted_span_inner = _{ literal_in_double_quoted_span }
+
+literal_in_double_quoted_span = ${
+    (
+        !("\"" | "\\" | "`" | "$") ~ ANY
+        | "\\" ~ ANY
+        | WHITESPACE
+    )+
+}
+
+// Assignment
+string_initializer = { word }
+initializer = { string_initializer }
+
+assignment = { var_name ~ assign_op ~ initializer ~ WHITESPACE? }
+assignment_command = { assignment+ }
+
+// Command
+command = { assignment_command }
+
+// Compound list
+compound_list = { compound_list_inner ~ (newline ~ wsnl? ~ compound_list)* }
+empty_line = { "" }
+compound_list_inner = _{ command | empty_line }
+
+// EFile
+efile = _{ SOI ~ compound_list ~ EOI }
