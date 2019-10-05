@@ -17,10 +17,10 @@ use std::sync::Arc;
 
 use failure::Error;
 use nix;
-use nix::sys::signal::{kill, SaFlags, sigaction, SigAction, SigHandler, Signal, SigSet};
+use nix::sys::signal::{kill, Signal};
 use nix::sys::termios::{SetArg::TCSADRAIN, tcgetattr, tcsetattr, Termios};
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
-use nix::unistd::{close, dup2, execv, fork, ForkResult, getpid, Pid, pipe, setpgid, tcsetpgrp};
+use nix::unistd::{close, dup2, execv, fork, ForkResult, getpid, Pid, pipe, tcsetpgrp};
 
 use crate::core::ebuild::builtins::{
     INTERNAL_COMMANDS, InternalCommandContext, InternalCommandError,
@@ -84,8 +84,6 @@ struct Context {
     pgid: Option<Pid>,
     /// The process should be executed in background.
     background: bool,
-    /// Is the shell interactive?
-    interactive: bool,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -1142,38 +1140,6 @@ impl Executor {
             ForkResult::Parent { child } => Ok(ExitStatus::Running(child)),
             ForkResult::Child => {
                 // Create or join a process group.
-                if ctx.interactive {
-                    let pid = getpid();
-                    let pgid = match ctx.pgid {
-                        Some(pgid) => {
-                            setpgid(pid, pgid).expect("failed to setpgid");
-                            pgid
-                        }
-                        None => {
-                            setpgid(pid, pid).expect("failed to setpgid");
-                            pid
-                        }
-                    };
-
-                    if !ctx.background {
-                        self.set_terminal_process_group(pgid);
-
-                        // Place the terminal out of raw mode.
-                        self.restore_terminal_attrs(self.shell_termios.as_ref().unwrap());
-                    }
-
-                    // Accept job-control-related signals (refer https://www.gnu.org/software/libc/manual/html_node/Launching-Jobs.html)
-                    let action =
-                        SigAction::new(SigHandler::SigDfl, SaFlags::empty(), SigSet::empty());
-                    unsafe {
-                        sigaction(Signal::SIGINT, &action).expect("failed to sigaction");
-                        sigaction(Signal::SIGQUIT, &action).expect("failed to sigaction");
-                        sigaction(Signal::SIGTSTP, &action).expect("failed to sigaction");
-                        sigaction(Signal::SIGTTIN, &action).expect("failed to sigaction");
-                        sigaction(Signal::SIGTTOU, &action).expect("failed to sigaction");
-                        sigaction(Signal::SIGCHLD, &action).expect("failed to sigaction");
-                    }
-                }
 
                 // Initialize stdin/stdout/stderr and redirections.
                 for (src, dst) in fds {
@@ -1677,7 +1643,6 @@ impl Executor {
             stderr: 2,
             pgid: None,
             background: false,
-            interactive: false,
         };
 
         let pid = self.spawn_subshell(terms, &ctx)?;
@@ -1743,7 +1708,6 @@ impl Executor {
                     stderr,
                     pgid,
                     background,
-                    interactive: false,
                 },
             );
 
