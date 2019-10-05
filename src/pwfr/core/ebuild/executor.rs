@@ -1995,4 +1995,35 @@ mod tests {
         assert_eq!(result, ExitStatus::ExitedWith(0));
         assert_eq!(executor.get_str("c"), Some(String::from("9")));
     }
+
+    #[test]
+    fn run_some_complex_script() {
+        const SCRIPT: &'static str = "\
+        # some comments before main body
+        # copyrights, author meta, etc
+        PATH=\"${ENV}/last/path.env\"
+        FLAGS=\"one two three\"
+        not_needed_func1() {
+            another_func arg1 arg2
+        }
+        # another comment
+        not_needed_func2() {
+            another_func2 arg3 arg4
+        }
+        ";
+
+        let mut executor = Executor::new("item three");
+        executor.set("ENV", Value::String("root".to_string()), false);
+        let result = executor.run_str(SCRIPT);
+
+        assert_eq!(result, ExitStatus::ExitedWith(0));
+        assert_eq!(
+            executor.get_str("PATH"),
+            Some(String::from("root/last/path.env"))
+        );
+        assert_eq!(
+            executor.get_str("FLAGS"),
+            Some(String::from("one two three"))
+        );
+    }
 }
