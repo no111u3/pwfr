@@ -1,7 +1,7 @@
 //! Ebuild and Eclass Ast Executor
 //!
 //! Common types of Executor environment
-//! Inspired by https://crates.io/crates/nsh (github: https://github.com/seiyanuta/nsh)
+//! Inspired by https://crates.io/crates/Ebuild (github: https://github.com/seiyanuta/Ebuild)
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -605,7 +605,7 @@ impl Executor {
         match op {
             ExpansionOp::Length => {
                 if self.nounset {
-                    eprintln!("nsh: undefined variable `{}'", name);
+                    eprintln!("Ebuild: undefined variable `{}'", name);
                     std::process::exit(1);
                 }
 
@@ -613,7 +613,7 @@ impl Executor {
             }
             ExpansionOp::GetOrEmpty => {
                 if self.nounset {
-                    eprintln!("nsh: undefined variable `{}'", name);
+                    eprintln!("Ebuild: undefined variable `{}'", name);
                     std::process::exit(1);
                 }
 
@@ -1195,7 +1195,7 @@ impl Executor {
                     match value {
                         Value::String(s) => std::env::set_var(&assignment.name, s),
                         Value::Array(_) => {
-                            eprintln!("nsh: Array assignments in a command is not supported.");
+                            eprintln!("Ebuild: Array assignments in a command is not supported.");
                             std::process::exit(1);
                         }
                         Value::Function(_) => (),
@@ -1418,7 +1418,7 @@ impl Executor {
         declarations: &[efile::LocalDeclaration],
     ) -> Result<ExitStatus> {
         if self.in_global_frame() {
-            eprintln!("nsh: local variable can only be used in a function");
+            eprintln!("Ebuild: local variable can only be used in a function");
             Ok(ExitStatus::ExitedWith(1))
         } else {
             for decl in declarations {
@@ -1786,7 +1786,7 @@ impl Executor {
                         .downcast_ref::<NoMatchesError>()
                         .is_some()
                     {
-                        eprintln!("nsh: error: no matches");
+                        eprintln!("Ebuild: error: no matches");
                         last_result = Some(ExitStatus::ExitedWith(1));
                         break;
                     }
@@ -1982,7 +1982,7 @@ impl Executor {
                 ExitStatus::ExitedWith(0)
             }
             Err(efile::ParseError::Fatal(err)) => {
-                eprintln!("nsh: parse error: {}", err);
+                eprintln!("Ebuild: parse error: {}", err);
                 ExitStatus::ExitedWith(-1)
             }
         }
