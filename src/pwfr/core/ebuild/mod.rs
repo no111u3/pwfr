@@ -3,6 +3,7 @@
 //! Main functionality of for ebuild entity
 
 pub mod efile;
+pub mod variable;
 
 // Ebuild entity
 #[derive(Debug, PartialEq)]
