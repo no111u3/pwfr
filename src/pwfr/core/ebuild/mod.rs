@@ -5,6 +5,9 @@
 pub mod builtins;
 pub mod efile;
 pub mod executor;
+pub mod fuzzy;
+pub mod path;
+pub mod pattern;
 pub mod utils;
 pub mod variable;
 
