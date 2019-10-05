@@ -4,6 +4,7 @@
 
 pub mod builtins;
 pub mod efile;
+pub mod executor;
 pub mod utils;
 pub mod variable;
 
