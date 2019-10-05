@@ -2022,4 +2022,13 @@ mod tests {
             1 + 2 * 3 + 4
         );
     }
+
+    #[test]
+    fn run_simple_script() {
+        let mut executor = Executor::new("item two");
+        let result = executor.run_str("a=4; b=5; c=$((a + b))");
+
+        assert_eq!(result, ExitStatus::ExitedWith(0));
+        assert_eq!(executor.get_str("c"), Some(String::from("9")));
+    }
 }
