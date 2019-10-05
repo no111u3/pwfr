@@ -17,3 +17,5 @@ clap = "2.33.0"
 pest = "2.1"
 pest_derive = "2.1"
 termion = "1.5"
+nix = "0.15"
+log = { version = "0.4", features = ["max_level_trace", "release_max_level_warn"] }
