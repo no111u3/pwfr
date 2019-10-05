@@ -2,7 +2,9 @@
 //!
 //! Main functionality of for ebuild entity
 
+pub mod builtins;
 pub mod efile;
+pub mod utils;
 pub mod variable;
 
 // Ebuild entity
