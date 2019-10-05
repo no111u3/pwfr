@@ -1431,6 +1431,7 @@ pub fn parse(efile: &str) -> Result<Ast, ParseError> {
     parser.parse(efile)
 }
 
+#[allow(unused)]
 macro_rules! literal_word_vec {
     ($($x:expr), *) => {
         vec![$( Word(vec![Span::Literal($x.to_string())]), )*]
