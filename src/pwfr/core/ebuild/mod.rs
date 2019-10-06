@@ -4,6 +4,7 @@
 
 pub mod builtins;
 pub mod efile;
+pub mod evars;
 pub mod executor;
 pub mod fuzzy;
 pub mod path;
