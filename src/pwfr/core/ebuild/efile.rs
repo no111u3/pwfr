@@ -1891,11 +1891,11 @@ mod tests {
 
         assert_eq!(
             parse(concat!(
-            "if [ foo = \"foo\" ];\n",
-            "then\n",
-            "    echo hello\n",
-            "    echo world\n",
-            "fi"
+                "if [ foo = \"foo\" ];\n",
+                "then\n",
+                "    echo hello\n",
+                "    echo world\n",
+                "fi"
             )),
             Ok(Ast {
                 terms: vec![Term {
@@ -2703,7 +2703,7 @@ mod tests {
                                     name: "TERM".into(),
                                     op: ExpansionOp::GetOrEmpty,
                                     quoted: true,
-                                }], ),
+                                }],),
                             ],
                             redirects: vec![],
                             assignments: vec![],
@@ -2728,12 +2728,12 @@ mod tests {
                                     name: "?".into(),
                                     op: ExpansionOp::GetOrEmpty,
                                     quoted: false,
-                                }], ),
+                                }],),
                                 Word(vec![Span::Parameter {
                                     name: "7".into(),
                                     op: ExpansionOp::GetOrEmpty,
                                     quoted: false,
-                                }], ),
+                                }],),
                             ],
                             redirects: vec![],
                             assignments: vec![],
@@ -2849,7 +2849,7 @@ mod tests {
                                             Span::AnyString { quoted: false },
                                             Span::Literal("/e".into()),
                                         ]),
-                                        replacement: Word(vec![Span::Literal("12345".into()), ]),
+                                        replacement: Word(vec![Span::Literal("12345".into()),]),
                                         replace_all: false,
                                     },
                                 }]),
@@ -3339,11 +3339,11 @@ mod tests {
     fn ast_test_heredoc() {
         assert_eq!(
             parse(concat!(
-            "cat << EOF > file.txt\n",
-            "hello world\n",
-            "from\n",
-            "heredoc!\n",
-            "EOF\n"
+                "cat << EOF > file.txt\n",
+                "hello world\n",
+                "from\n",
+                "heredoc!\n",
+                "EOF\n"
             )),
             Ok(Ast {
                 terms: vec![Term {
@@ -3372,7 +3372,7 @@ mod tests {
                             assignments: vec![],
                         }],
                     }],
-                }, ]
+                },]
             })
         );
     }

@@ -296,7 +296,7 @@ mod tests {
             Some(MatchResult { start: 2, end: 4 })
         );
 
-        assert_eq!(pattern_word_match(&pat, ""), None, );
+        assert_eq!(pattern_word_match(&pat, ""), None,);
 
         assert_eq!(pattern_word_match(&pat, "xyz"), None);
 
@@ -334,7 +334,7 @@ mod tests {
             fragments: vec![LiteralOrGlob::AnyString],
         };
 
-        assert_eq!(pattern_word_match(&pat, ""), None, );
+        assert_eq!(pattern_word_match(&pat, ""), None,);
 
         assert_eq!(
             pattern_word_match(&pat, "x"),

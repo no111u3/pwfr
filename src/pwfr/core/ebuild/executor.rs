@@ -18,12 +18,12 @@ use std::sync::Arc;
 use failure::Error;
 use nix;
 use nix::sys::signal::{kill, Signal};
-use nix::sys::termios::{SetArg::TCSADRAIN, tcgetattr, tcsetattr, Termios};
+use nix::sys::termios::{tcgetattr, tcsetattr, SetArg::TCSADRAIN, Termios};
 use nix::sys::wait::{waitpid, WaitPidFlag, WaitStatus};
-use nix::unistd::{close, dup2, execv, fork, ForkResult, getpid, Pid, pipe, tcsetpgrp};
+use nix::unistd::{close, dup2, execv, fork, getpid, pipe, tcsetpgrp, ForkResult, Pid};
 
 use crate::core::ebuild::builtins::{
-    INTERNAL_COMMANDS, InternalCommandContext, InternalCommandError,
+    InternalCommandContext, InternalCommandError, INTERNAL_COMMANDS,
 };
 use crate::core::ebuild::efile::{
     self, Assignment, Ast, BinaryCondExpr, BinaryExpr, CondExpr, ExpansionOp, Expr, HereDoc,
@@ -31,7 +31,7 @@ use crate::core::ebuild::efile::{
 };
 use crate::core::ebuild::path::{lookup_external_command, reload_paths, wait_for_path_loader};
 use crate::core::ebuild::pattern::{
-    LiteralOrGlob, match_pattern, match_pattern_all, NoMatchesError, PatternWord, replace_pattern,
+    match_pattern, match_pattern_all, replace_pattern, LiteralOrGlob, NoMatchesError, PatternWord,
 };
 use crate::core::ebuild::utils::FdFile;
 use crate::core::ebuild::variable::{Value, Variable};
@@ -1390,8 +1390,8 @@ impl Executor {
             for decl in declarations {
                 match decl {
                     LocalDeclaration::Assignment(Assignment {
-                                                     name, initializer, ..
-                                                 }) => {
+                        name, initializer, ..
+                    }) => {
                         let value = self.evaluate_initializer(&initializer)?;
                         self.set(&name, value, true)
                     }
