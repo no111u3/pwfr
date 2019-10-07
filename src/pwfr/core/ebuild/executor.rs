@@ -2026,4 +2026,12 @@ mod tests {
             Some(String::from("one two three"))
         );
     }
+
+    #[test]
+    fn evaluate_empty_ebuild() {
+        let mut executor = Executor::new("empty ebuild");
+        let result = executor.run_file(PathBuf::from("tests/ebuild/empty.ebuild"));
+
+        assert_eq!(result, ExitStatus::ExitedWith(0));
+    }
 }
