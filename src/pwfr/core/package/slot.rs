@@ -6,7 +6,7 @@ use crate::core::package::version::Version;
 
 #[derive(Debug, PartialEq)]
 pub struct Slot {
-    slot: i32,
+    slot: String,
     versions: Vec<Version>,
 }
 
@@ -27,7 +27,7 @@ mod tests {
     fn create() {
         let slot_one = Slot::new();
         let slot_two = Slot {
-            slot: 0,
+            slot: String::new(),
             versions: Vec::new(),
         };
 
