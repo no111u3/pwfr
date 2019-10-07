@@ -5,6 +5,7 @@
 use std::path::PathBuf;
 
 pub mod builtins;
+pub mod eapi;
 pub mod efile;
 pub mod evars;
 pub mod executor;
