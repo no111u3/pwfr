@@ -5,8 +5,7 @@
 // Ebuild API versions
 //
 // Contains implemented and supported Ebuild API versions
-pub enum EApiVersion {
-}
+pub enum EApiVersion {}
 
 // Main Ebuild API
 pub trait EApi {
