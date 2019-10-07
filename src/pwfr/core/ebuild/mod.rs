@@ -2,6 +2,8 @@
 //!
 //! Main functionality of for ebuild entity
 
+use std::path::PathBuf;
+
 pub mod builtins;
 pub mod efile;
 pub mod evars;
@@ -14,11 +16,13 @@ pub mod variable;
 
 // Ebuild entity
 #[derive(Debug, PartialEq)]
-pub struct Ebuild {}
+pub struct Ebuild {
+    path: PathBuf,
+}
 
 impl Ebuild {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(path: PathBuf) -> Self {
+        Self { path }
     }
 }
 
@@ -28,8 +32,10 @@ mod tests {
 
     #[test]
     fn create() {
-        let ebuild_one = Ebuild {};
-        let ebuild_two = Ebuild::new();
+        let ebuild_one = Ebuild {
+            path: PathBuf::from("test/path"),
+        };
+        let ebuild_two = Ebuild::new(PathBuf::from("test/path"));
 
         assert_eq!(ebuild_one, ebuild_two);
     }
