@@ -13,7 +13,7 @@ pub struct Slot {
 impl Slot {
     pub fn new() -> Self {
         Self {
-            slot: 0,
+            slot: String::new(),
             versions: Vec::new(),
         }
     }
