@@ -1,5 +1,5 @@
 [package]
-name = "pwrf"
+name = "pwfr"
 version = "0.0.0-none"
 edition = "2018"
 authors = ["Boris Vinogradov <no111u3@gmail.com>"]
