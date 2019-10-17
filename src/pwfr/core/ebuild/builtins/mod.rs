@@ -24,7 +24,7 @@ pub enum InternalCommandError {
     BadRedirection,
 }
 
-type InternalCommand = fn(&mut InternalCommandContext) -> ExitStatus;
+type InternalCommand = fn(&mut InternalCommandContext<'_>) -> ExitStatus;
 
 lazy_static! {
     // TODO: Construct this map in compile time.

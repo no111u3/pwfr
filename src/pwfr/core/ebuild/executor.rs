@@ -199,7 +199,7 @@ impl JobId {
 }
 
 impl fmt::Display for JobId {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self.0, f)
     }
 }
@@ -455,7 +455,7 @@ impl Executor {
         self.exported.insert(name.to_string());
     }
 
-    pub fn exported_names(&self) -> std::collections::hash_set::Iter<String> {
+    pub fn exported_names(&self) -> std::collections::hash_set::Iter<'_, String> {
         self.exported.iter()
     }
 

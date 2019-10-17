@@ -353,7 +353,7 @@ impl EFileParser {
 
     // proc_subst_direction = { "<" | ">" }
     // proc_subst_span = !{ proc_subst_direction ~ "(" ~ compound_list ~ ")" }
-    fn visit_proc_subst_span(&mut self, pair: Pair<Rule>) -> Span {
+    fn visit_proc_subst_span(&mut self, pair: Pair<'_, Rule>) -> Span {
         let mut inner = pair.into_inner();
         let direction = inner.next().unwrap();
         let compound_list = inner.next().unwrap();
@@ -369,13 +369,13 @@ impl EFileParser {
     }
 
     // command_span = !{ "$(" ~ compound_list ~ ")" }
-    fn visit_command_span(&mut self, pair: Pair<Rule>, quoted: bool) -> Span {
+    fn visit_command_span(&mut self, pair: Pair<'_, Rule>, quoted: bool) -> Span {
         let body = self.visit_compound_list(pair.into_inner().next().unwrap());
         Span::Command { body, quoted }
     }
 
     // param_ex_span = { "$" ~ "{" ~ length_op ~ expandable_var_name ~ param_opt? ~ "}" }
-    fn visit_param_ex_span(&mut self, pair: Pair<Rule>, quoted: bool) -> Span {
+    fn visit_param_ex_span(&mut self, pair: Pair<'_, Rule>, quoted: bool) -> Span {
         let mut inner = pair.into_inner();
         let length_op = inner.next().unwrap().as_span().as_str().to_owned();
         let name = inner.next().unwrap().as_span().as_str().to_owned();
@@ -477,7 +477,7 @@ impl EFileParser {
     }
 
     // param_span = { "$" ~ expandable_var_name }
-    fn visit_param_span(&mut self, pair: Pair<Rule>, quoted: bool) -> Span {
+    fn visit_param_span(&mut self, pair: Pair<'_, Rule>, quoted: bool) -> Span {
         let name = pair
             .into_inner()
             .next()
@@ -494,7 +494,7 @@ impl EFileParser {
     // postfix_incdec = { ("++" | "--")? }
     // primary = _{ num | ("$"? ~ var_name) |  ("(" ~ expr ~ ")") }
     // num = { ASCII_DIGIT+ }
-    fn visit_factor(&mut self, pair: Pair<Rule>) -> Expr {
+    fn visit_factor(&mut self, pair: Pair<'_, Rule>) -> Expr {
         assert_eq!(pair.as_rule(), Rule::factor);
 
         let mut inner = pair.into_inner();
@@ -529,7 +529,7 @@ impl EFileParser {
 
     // term = { factor ~ (factor_op ~ expr)? }
     // factor_op = { "*" | "/" }
-    fn visit_term(&mut self, pair: Pair<Rule>) -> Expr {
+    fn visit_term(&mut self, pair: Pair<'_, Rule>) -> Expr {
         assert_eq!(pair.as_rule(), Rule::term);
 
         let mut inner = pair.into_inner();
@@ -554,7 +554,7 @@ impl EFileParser {
 
     // arith = { term ~ (arith_op ~ arith)? }
     // arith_op = { "+" | "-" }
-    fn visit_arith_expr(&mut self, pair: Pair<Rule>) -> Expr {
+    fn visit_arith_expr(&mut self, pair: Pair<'_, Rule>) -> Expr {
         assert_eq!(pair.as_rule(), Rule::arith);
 
         let mut inner = pair.into_inner();
@@ -582,7 +582,7 @@ impl EFileParser {
     //        | arith
     //        }
     // assign_op = { "=" }
-    fn visit_assign_expr(&mut self, pair: Pair<Rule>) -> Expr {
+    fn visit_assign_expr(&mut self, pair: Pair<'_, Rule>) -> Expr {
         let mut inner = pair.clone().into_inner();
         let first = inner.next().unwrap();
         match first.as_rule() {
@@ -607,7 +607,7 @@ impl EFileParser {
 
     // expr = !{ assign ~ (comp_op ~ expr)? }
     // comp_op = { "==" | "!=" | ">" | ">=" | "<" | "<=" }
-    fn visit_expr(&mut self, pair: Pair<Rule>) -> Expr {
+    fn visit_expr(&mut self, pair: Pair<'_, Rule>) -> Expr {
         let mut inner = pair.clone().into_inner();
         let first = inner.next().unwrap();
         let maybe_op = inner.next();
@@ -657,13 +657,17 @@ impl EFileParser {
     }
 
     // expr_span = !{ "$((" ~ expr ~ "))" }
-    fn visit_expr_span(&mut self, pair: Pair<Rule>) -> Span {
+    fn visit_expr_span(&mut self, pair: Pair<'_, Rule>) -> Span {
         let expr = self.visit_expr(pair.into_inner().next().unwrap());
         Span::ArithExpr { expr }
     }
 
     // `a\b\$cd' -> `echo ab$cd'
-    fn visit_escape_sequences(&mut self, pair: Pair<Rule>, escaped_chars: Option<&str>) -> String {
+    fn visit_escape_sequences(
+        &mut self,
+        pair: Pair<'_, Rule>,
+        escaped_chars: Option<&str>,
+    ) -> String {
         let mut s = String::new();
         let mut escaped = false;
         for ch in pair.as_str().chars() {
@@ -685,7 +689,7 @@ impl EFileParser {
         s
     }
 
-    fn visit_cond_primary(&mut self, pair: Pair<Rule>) -> Box<CondExpr> {
+    fn visit_cond_primary(&mut self, pair: Pair<'_, Rule>) -> Box<CondExpr> {
         let mut inner = pair.into_inner();
         let primary = inner.next().unwrap();
         match primary.as_rule() {
@@ -698,7 +702,7 @@ impl EFileParser {
         }
     }
 
-    fn visit_cond_term(&mut self, pair: Pair<Rule>) -> Box<CondExpr> {
+    fn visit_cond_term(&mut self, pair: Pair<'_, Rule>) -> Box<CondExpr> {
         let mut inner = pair.into_inner();
         let lhs = self.visit_cond_primary(inner.next().unwrap());
         if let Some(op) = inner.next() {
@@ -719,7 +723,7 @@ impl EFileParser {
         }
     }
 
-    fn visit_cond_and(&mut self, pair: Pair<Rule>) -> Box<CondExpr> {
+    fn visit_cond_and(&mut self, pair: Pair<'_, Rule>) -> Box<CondExpr> {
         let mut inner = pair.into_inner();
         let lhs = self.visit_cond_term(inner.next().unwrap());
         if let Some(rhs) = inner.next() {
@@ -730,7 +734,7 @@ impl EFileParser {
         }
     }
 
-    fn visit_cond_or(&mut self, pair: Pair<Rule>) -> Box<CondExpr> {
+    fn visit_cond_or(&mut self, pair: Pair<'_, Rule>) -> Box<CondExpr> {
         let mut inner = pair.into_inner();
         let lhs = self.visit_cond_and(inner.next().unwrap());
         if let Some(rhs) = inner.next() {
@@ -742,12 +746,12 @@ impl EFileParser {
     }
 
     // cond_expr =  _{ cond_or }
-    fn visit_cond_expr(&mut self, pair: Pair<Rule>) -> Box<CondExpr> {
+    fn visit_cond_expr(&mut self, pair: Pair<'_, Rule>) -> Box<CondExpr> {
         self.visit_cond_or(pair)
     }
 
     // cond_ex = { "[[" ~ cond_expr ~ "]]" }
-    fn visit_cond_ex(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_cond_ex(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let expr = self.visit_cond_expr(inner.next().unwrap());
 
@@ -767,7 +771,7 @@ impl EFileParser {
     //     | param_ex_span
     //     | param_span
     // }
-    fn visit_escaped_word(&mut self, pair: Pair<Rule>, literal_chars: bool) -> Word {
+    fn visit_escaped_word(&mut self, pair: Pair<'_, Rule>, literal_chars: bool) -> Word {
         assert_eq!(pair.as_rule(), Rule::word);
 
         let mut spans = Vec::new();
@@ -856,7 +860,7 @@ impl EFileParser {
         Word(spans)
     }
 
-    fn visit_word(&mut self, pair: Pair<Rule>) -> Word {
+    fn visit_word(&mut self, pair: Pair<'_, Rule>) -> Word {
         self.visit_escaped_word(pair, false)
     }
 
@@ -864,7 +868,7 @@ impl EFileParser {
     // redirect_direction = { "<" | ">" | ">>" }
     // redirect_to_fd = ${ "&" ~ ASCII_DIGIT* }
     // redirect = { fd ~ redirect_direction ~ (word | redirect_to_fd) }
-    fn visit_redirect(&mut self, pair: Pair<Rule>) -> Redirection {
+    fn visit_redirect(&mut self, pair: Pair<'_, Rule>) -> Redirection {
         let mut inner = pair.into_inner();
         let fd = inner.next().unwrap();
         let symbol = inner.next().unwrap();
@@ -906,7 +910,7 @@ impl EFileParser {
     // initializer = { array_initializer | string_initializer }
     // string_initializer = { word }
     // array_initializer = { ("(" ~ word* ~ ")") }
-    fn visit_assignment(&mut self, pair: Pair<Rule>) -> Assignment {
+    fn visit_assignment(&mut self, pair: Pair<'_, Rule>) -> Assignment {
         let mut inner = pair.into_inner();
 
         let name = inner.next().unwrap().as_span().as_str().to_owned();
@@ -951,7 +955,7 @@ impl EFileParser {
         old
     }
 
-    fn visit_simple_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_simple_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         assert_eq!(pair.as_rule(), Rule::simple_command);
 
         let mut argv = Vec::new();
@@ -1001,7 +1005,7 @@ impl EFileParser {
     // }
     // elif_part = { "elif" ~ compound_list ~ "then" ~ compound_list }
     // else_part = { "else" ~ compound_list }
-    fn visit_if_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_if_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         assert_eq!(pair.as_rule(), Rule::if_command);
 
         let mut inner = pair.into_inner();
@@ -1046,7 +1050,7 @@ impl EFileParser {
     // case_command = {
     //     "case" ~ word ~ "in" ~ (wsnl | case_item)* ~ "esac"
     // }
-    fn visit_case_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_case_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let word = self.visit_word(inner.next().unwrap());
         let mut cases = Vec::new();
@@ -1074,7 +1078,7 @@ impl EFileParser {
     // while_command = {
     //     "while" ~ compound_list ~ "do" ~ compound_list ~ "done"
     // }
-    fn visit_while_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_while_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let condition = self.visit_compound_list(inner.next().unwrap());
         let body = self.visit_compound_list(inner.next().unwrap());
@@ -1086,7 +1090,7 @@ impl EFileParser {
     // for_command = {
     //     "for" ~ var_name ~ "in" ~ word_list ~ "do" ~ compound_list ~ "done"
     // }
-    fn visit_for_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_for_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let var_name = inner.next().unwrap().as_span().as_str().to_owned();
         let words = inner
@@ -1109,7 +1113,7 @@ impl EFileParser {
     // arith_for_command = {
     //     "for" ~ arith_for_exprs ~ (";" | wsnl)+ ~ "do" ~ compound_list ~ "done"
     // }
-    fn visit_arith_for_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_arith_for_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let mut exprs = inner.next().unwrap().into_inner();
         let compound_list = wsnl!(self, inner).unwrap();
@@ -1130,7 +1134,7 @@ impl EFileParser {
     // function_definition = {
     //     ("function")? ~ var_name ~ "()" ~ wsnl ~ compound_list
     // }
-    fn visit_function_definition(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_function_definition(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let name = inner.next().unwrap().as_span().as_str().to_owned();
         let compound_list = wsnl!(self, inner).unwrap();
@@ -1140,7 +1144,7 @@ impl EFileParser {
     }
 
     // local_definition = { "local" ~ (assignment | var_name)+ }
-    fn visit_local_definition(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_local_definition(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut declarations = Vec::new();
         for inner in pair.into_inner() {
             declarations.push(match inner.as_rule() {
@@ -1154,7 +1158,7 @@ impl EFileParser {
     }
 
     // assignment_command = { assignment+ }
-    fn visit_assignment_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_assignment_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let assignments = pair
             .into_inner()
             .map(|inner| self.visit_assignment(inner))
@@ -1163,7 +1167,7 @@ impl EFileParser {
     }
 
     // group = { "{" ~ compound_list ~ "}" }
-    fn visit_group_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_group_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let terms = self.visit_compound_list(inner.next().unwrap());
 
@@ -1171,7 +1175,7 @@ impl EFileParser {
     }
 
     // group = { "(" ~ compound_list ~ ")" }
-    fn visit_subshell_group_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_subshell_group_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let terms = self.visit_compound_list(inner.next().unwrap());
 
@@ -1179,7 +1183,7 @@ impl EFileParser {
     }
 
     // return = { return ~ num? }
-    fn visit_return_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_return_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let mut inner = pair.into_inner();
         let status = inner
             .next()
@@ -1203,7 +1207,7 @@ impl EFileParser {
     //     | simple_command
     //     | assignment_command
     // }
-    fn visit_command(&mut self, pair: Pair<Rule>) -> Command {
+    fn visit_command(&mut self, pair: Pair<'_, Rule>) -> Command {
         let inner = pair.into_inner().next().unwrap();
         match inner.as_rule() {
             Rule::simple_command => self.visit_simple_command(inner),
@@ -1226,7 +1230,7 @@ impl EFileParser {
     }
 
     // pipeline = { command ~ ((!("||") ~ "|") ~ wsnl? ~ command)* }
-    fn visit_pipeline(&mut self, pair: Pair<Rule>) -> Vec<Command> {
+    fn visit_pipeline(&mut self, pair: Pair<'_, Rule>) -> Vec<Command> {
         let mut commands = Vec::new();
         let mut inner = pair.into_inner();
         while let Some(command) = wsnl!(self, inner) {
@@ -1238,7 +1242,7 @@ impl EFileParser {
 
     // and_or_list = { pipeline ~ (and_or_list_sep ~ wsnl? ~ and_or_list)* }
     // and_or_list_sep = { "||" | "&&" }
-    fn visit_and_or_list(&mut self, pair: Pair<Rule>, run_if: RunIf) -> Vec<Pipeline> {
+    fn visit_and_or_list(&mut self, pair: Pair<'_, Rule>, run_if: RunIf) -> Vec<Pipeline> {
         let mut terms = Vec::new();
         let mut inner = pair.into_inner();
         if let Some(pipeline) = inner.next() {
@@ -1266,7 +1270,7 @@ impl EFileParser {
     // compound_list_sep = { (!(";;") ~ ";") | !("&&") ~ "&" | "\n" }
     // empty_line = { "" }
     // compound_list_inner = _{ and_or_list | empty_line }
-    fn visit_compound_list(&mut self, pair: Pair<Rule>) -> Vec<Term> {
+    fn visit_compound_list(&mut self, pair: Pair<'_, Rule>) -> Vec<Term> {
         let mut terms = Vec::new();
         let mut inner = pair.into_inner();
         if let Some(and_or_list) = inner.next() {
@@ -1312,7 +1316,7 @@ impl EFileParser {
         terms
     }
 
-    pub fn visit_newline(&mut self, pair: Pair<Rule>) {
+    pub fn visit_newline(&mut self, pair: Pair<'_, Rule>) {
         if let Some(newline_inner) = pair.into_inner().next() {
             if Rule::heredoc_body == newline_inner.as_rule() {
                 let lines: Vec<Vec<Word>> = newline_inner
@@ -1398,7 +1402,7 @@ impl EFileParser {
 
     /// Dumps the parsed pairs for debbuging.
     #[allow(unused)]
-    fn dump(&mut self, pairs: pest::iterators::Pairs<Rule>, level: usize) {
+    fn dump(&mut self, pairs: pest::iterators::Pairs<'_, Rule>, level: usize) {
         for pair in pairs {
             for _ in 0..level {
                 print!("  ");
